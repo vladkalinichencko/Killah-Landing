@@ -21,6 +21,7 @@ body {
   color: var(--text);
   font-family: "Roboto Flex", system-ui, -apple-system, Segoe UI, Roboto, Arial;
   font-variation-settings: "wdth" 136, "wght" 600, "opsz" 36;
+  overflow-x: hidden;
 }
 img {
   display: block;
@@ -84,7 +85,8 @@ img {
   pointer-events: none;
   user-select: none;
   z-index: 0;
-  transform: translate(-50%, -50%) translate(var(--dx, 0px), var(--dy, 0px));
+  transform: translate(-50%, -50%);
+  will-change: transform;
 }
 .hero__lockup {
   position: relative;

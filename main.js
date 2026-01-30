@@ -21,6 +21,33 @@ function setupBoltSnap() {
   const lockup = document.querySelector(".hero__lockup");
   if (!bolt || !lockup) return;
 
+  const baseTransform = "translate(-50%, -50%)";
+
+  const boltVB = {
+    x: numAttr(bolt, "data-vb-x") ?? 0,
+    y: numAttr(bolt, "data-vb-y") ?? 0,
+    w: numAttr(bolt, "data-vb-w"),
+    h: numAttr(bolt, "data-vb-h"),
+  };
+  const lockVB = {
+    x: numAttr(lockup, "data-vb-x") ?? 0,
+    y: numAttr(lockup, "data-vb-y") ?? 0,
+    w: numAttr(lockup, "data-vb-w"),
+    h: numAttr(lockup, "data-vb-h"),
+  };
+  if (
+    boltVB.w == null ||
+    boltVB.h == null ||
+    lockVB.w == null ||
+    lockVB.h == null ||
+    boltVB.w <= 0 ||
+    boltVB.h <= 0 ||
+    lockVB.w <= 0 ||
+    lockVB.h <= 0
+  ) {
+    return;
+  }
+
   const tipXRaw = numAttr(bolt, "data-tip-x");
   const tipYRaw = numAttr(bolt, "data-tip-y");
   const targetX = numAttr(lockup, "data-target-x");
@@ -30,50 +57,51 @@ function setupBoltSnap() {
   const tipX = tipXRaw;
   const tipY = tipYRaw;
 
-  const ensureLoaded = () =>
-    (bolt.complete && (bolt.naturalWidth || 0) > 0) &&
-    (lockup.complete && (lockup.naturalWidth || 0) > 0);
+  const ensureLoaded = () => bolt.complete && lockup.complete;
+
+  const applyOffset = (dx, dy) => {
+    if (!Number.isFinite(dx) || !Number.isFinite(dy)) return;
+    bolt.style.transform = `${baseTransform} translate3d(${dx}px, ${dy}px, 0)`;
+  };
+
+  const toGlobal = (rect, vb, x, y) => {
+    const nx = (x - vb.x) / vb.w;
+    const ny = (y - vb.y) / vb.h;
+    return {
+      x: rect.left + nx * rect.width,
+      y: rect.top + ny * rect.height,
+    };
+  };
 
   const relayout = () => {
     if (!ensureLoaded()) return;
 
     // Always measure from the “base” (no extra dx/dy) to avoid drift on zoom/resizes.
-    bolt.style.setProperty("--dx", "0px");
-    bolt.style.setProperty("--dy", "0px");
+    bolt.style.transform = baseTransform;
 
     const boltRect = bolt.getBoundingClientRect();
     const lockRect = lockup.getBoundingClientRect();
     if (boltRect.width <= 0 || boltRect.height <= 0 || lockRect.width <= 0 || lockRect.height <= 0) return;
 
-    const boltW = bolt.naturalWidth;
-    const boltH = bolt.naturalHeight;
-    const lockW = lockup.naturalWidth;
-    const lockH = lockup.naturalHeight;
+    const tipG = toGlobal(boltRect, boltVB, tipX, tipY);
+    const targetG = toGlobal(lockRect, lockVB, targetX, targetY);
 
-    const boltScaleX = boltRect.width / boltW;
-    const boltScaleY = boltRect.height / boltH;
-    const lockScaleX = lockRect.width / lockW;
-    const lockScaleY = lockRect.height / lockH;
+    const dx = targetG.x - tipG.x;
+    const dy = targetG.y - tipG.y;
 
-    const tipGX = boltRect.left + tipX * boltScaleX;
-    const tipGY = boltRect.top + tipY * boltScaleY;
-
-    const targetGX = lockRect.left + targetX * lockScaleX;
-    const targetGY = lockRect.top + targetY * lockScaleY;
-
-    const dx = targetGX - tipGX;
-    const dy = targetGY - tipGY;
-
-    bolt.style.setProperty("--dx", `${dx}px`);
-    bolt.style.setProperty("--dy", `${dy}px`);
+    applyOffset(dx, dy);
   };
 
   const run = rafDebounce(relayout);
 
-  const ro = new ResizeObserver(run);
-  ro.observe(bolt);
-  ro.observe(lockup);
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(run);
+    ro.observe(bolt);
+    ro.observe(lockup);
+  }
   window.addEventListener("resize", run, { passive: true });
+  window.addEventListener("orientationchange", run, { passive: true });
+  window.visualViewport?.addEventListener("resize", run, { passive: true });
   bolt.addEventListener("load", run, { passive: true });
   lockup.addEventListener("load", run, { passive: true });
   run();
