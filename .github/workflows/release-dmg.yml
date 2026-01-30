@@ -1,0 +1,29 @@
+name: Release DMG
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure DMG exists
+        run: |
+          if [[ ! -f "sources/downloads/killah.dmg" ]]; then
+            echo "Missing sources/downloads/killah.dmg" >&2
+            echo "Put the DMG there (temporarily) or upload manually via the GitHub UI." >&2
+            exit 1
+          fi
+
+      - name: Create GitHub Release and upload DMG
+        uses: softprops/action-gh-release@v2
+        with:
+          files: sources/downloads/killah.dmg
