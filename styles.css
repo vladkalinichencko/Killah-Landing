@@ -11,20 +11,9 @@
 *::after {
   box-sizing: border-box;
 }
-html,
-body {
-  height: 100%;
-}
-
-/* Desktop Safari sometimes scrolls the root element (`html`) horizontally.
-   We lock it here, but on iOS this can break the toolbar behavior, so we undo it there. */
 html {
-  overflow-x: hidden;
-}
-@supports (-webkit-touch-callout: none) {
-  html {
-    overflow-x: visible;
-  }
+  overflow-x: clip;
+  width: 100%;
 }
 body {
   margin: 0;
@@ -32,13 +21,9 @@ body {
   color: var(--text);
   font-family: "Roboto Flex", system-ui, -apple-system, Segoe UI, Roboto, Arial;
   font-variation-settings: "wdth" 136, "wght" 600, "opsz" 36;
-  overflow-x: hidden;
-}
-
-@supports (overflow: clip) {
-  body {
-    overflow-x: clip;
-  }
+  overflow-x: clip;
+  width: 100%;
+  min-height: 100%;
 }
 img {
   display: block;
@@ -93,7 +78,7 @@ img {
   width: 100%;
 }
 .hero__bolt {
-  position: absolute;
+  position: fixed;
   left: 50%;
   top: 50%;
   width: calc(100vw * var(--bolt-scale));
