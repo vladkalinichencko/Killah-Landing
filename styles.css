@@ -74,7 +74,6 @@ img {
 .hero__stack {
   position: relative;
   width: 100%;
-  overflow: hidden;
 }
 .hero__bolt {
   position: absolute;
@@ -88,6 +87,12 @@ img {
   z-index: 0;
   transform: translate(-50%, -50%);
   will-change: transform;
+}
+
+@supports (width: 1svw) {
+  .hero__bolt {
+    width: calc(100svw * var(--bolt-scale));
+  }
 }
 .hero__lockup {
   position: relative;
