@@ -168,6 +168,12 @@ img {
   font-size: 12px;
   font-style: italic;
 }
+.footer__docs {
+  color: inherit;
+  font-size: 14px;
+  margin-top: 8px;
+  width: fit-content;
+}
 .footer__group {
   display: flex;
   align-items: center;
